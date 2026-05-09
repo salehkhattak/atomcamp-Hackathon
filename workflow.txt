@@ -1,0 +1,60 @@
+# Workflow Log: AI Recruiting Inbox
+
+## 1. Project Structure Created
+- Created ai-recruiting-inbox/ with all required subfolders and files as per prompt.txt
+- All agent files and __init__.py are empty for now
+- requirements.txt includes: openai, python-dotenv, streamlit
+- .env.example contains OPENAI_API_KEY=your-key-here
+- README.md points to prompt.txt for requirements
+
+## 2. Initial Test Run
+- Implemented basic main.py to load OPENAI_API_KEY from .env
+- Ran `python src/main.py`
+- Result: "ERROR: OPENAI_API_KEY missing."
+- Issue: The .env file is empty; user needs to add their OpenAI API key
+- Fix: Edit d:\Hackathon\ai-recruiting-inbox\.env and add OPENAI_API_KEY=your-actual-key-here
+- Next: After adding the key, re-run python src/main.py to confirm "Setup complete. Key loaded."
+- Then proceed to implement agent functions as per prompt.txt
+
+## 3. API Key Added (First Key)
+- Added user's first OpenAI API key to .env file
+- Re-ran main.py: "Setup complete. Key loaded."
+- Next: Implement agent functions
+
+## 4. Agent Functions Implemented
+- Implemented extract_candidate_info in extractor.py
+- Implemented score_candidate in assessor.py
+- Implemented draft_action in coordinator.py
+- Implemented generate_manager_brief in summarizer.py
+- Updated main.py to wire all agents into a pipeline with hardcoded test data
+
+## 5. Pipeline Test Run (First Key)
+- Ran full pipeline with python src/main.py
+- Result: Pipeline failed with API key error: "Incorrect API key provided"
+- Issue: The provided OpenAI API key is invalid or expired
+- Fix: User needs to get a valid OpenAI API key from https://platform.openai.com/account/api-keys
+- Replace the key in .env with a valid one
+- Note: The key format looks correct (sk-proj-...), but it may be expired or have insufficient credits
+
+## 6. Gmail Integration Question
+- User asked about Gmail integration
+- Current prompt.txt does not include email listening; it's focused on AI agents for processing pasted emails
+- To complete the hackathon: Focus on the Streamlit UI first (next step in prompt.txt)
+- For Gmail integration: Would need to add IMAP client (imaplib) to listen to inbox, but that's beyond current scope
+- Suggestion: Complete the core AI pipeline and UI first, then add email integration as an extension
+
+## 7. New API Key Provided
+- User provided new OpenAI API key
+- Updated .env with new key
+- Ran pipeline: Failed with "insufficient_quota" error
+- Issue: The API key is valid but has no credits/usage left
+- Fix: User needs to add billing/credits to their OpenAI account at https://platform.openai.com/account/billing
+- For hackathon: May need to use free tier or alternative LLM (like Ollama with local models)
+- Next: Once credits are added, re-run pipeline; if not possible, implement UI assuming pipeline works
+
+- Implement Streamlit UI in app.py as per prompt.txt
+- Log each step and file update here
+
+## Next Steps
+- Implement agent functions as described in prompt.txt
+- Log each step and file update here

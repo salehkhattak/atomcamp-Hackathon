@@ -1,0 +1,276 @@
+Create a Python project called ai-recruiting-inbox with this exact structure:
+
+ai-recruiting-inbox/
+├── src/
+│   ├── agents/
+│   │   ├── init.py
+│   │   ├── extractor.py
+│   │   ├── assessor.py
+│   │   ├── coordinator.py
+│   │   └── summarizer.py
+│   ├── main.py
+│   └── app.py
+├── .env
+├── .env.example
+├── requirements.txt
+└── README.md
+
+requirements.txt must include:
+openai, python-dotenv, streamlit
+
+.env.example must contain:
+OPENAI_API_KEY=your-key-here
+
+In main.py:
+
+Load OPENAI_API_KEY from .env using python-dotenv
+
+Print "Setup complete. Key loaded." if found
+
+Print "ERROR: OPENAI_API_KEY missing." if not found
+
+All agent files and init.py should be empty for now.
+Verify by running python src/main.py and confirming the message prints.
+
+In src/agents/extractor.py write a function called extract_candidate_info(email_content: str) -> dict.
+
+The function should:
+
+Initialize the OpenAI client using the key from .env
+
+Send a chat completion request to gpt-4o-mini with:
+
+A system prompt that says: You are an expert AI recruiting assistant.
+Extract the candidate's details from the raw email text and return ONLY a raw JSON
+object with no markdown and no explanation with these exact keys:
+
+name: string (candidate's full name, or "Unknown" if not found)
+
+skills: list of strings (technical skills and tools mentioned)
+
+experience_years: integer (extract or estimate total years, use 0 if unknown)
+
+current_role: string (their current or most recent job title)
+
+intent: string (what they are asking for, e.g., "Applying for Backend role")
+
+A user message built from the email_content string
+
+Strip any markdown from the response
+
+Parse and return the JSON dict
+
+Wrap in try/except and raise a clear error if parsing fails
+
+Print "Extraction complete for: [name]" on success
+
+Do not call this function yet. Just define it cleanly.
+
+In src/agents/assessor.py write a function called score_candidate(extracted_data: dict, job_requirements: dict) -> dict.
+
+extracted_data is the dict returned by extract_candidate_info().
+job_requirements will always contain: "target_role" and "required_skills".
+
+The function should:
+
+Initialize the OpenAI client using the key from .env
+
+Send a chat completion request to gpt-4o-mini with:
+
+A system prompt that says: You are a senior technical technical recruiter.
+Evaluate the candidate's extracted data against the job requirements. Return ONLY a raw JSON
+object with no markdown and no explanation.
+The object must have these exact keys:
+
+score: integer between 0 and 100 based on skill overlap and experience
+
+verdict: one of "Strong Hire", "Potential Fit", "Reject"
+
+matched_skills: list of skills they have that match the requirements
+
+missing_skills: list of required skills they appear to lack
+
+reasoning: 2-3 sentences explaining the score and verdict
+
+A user message that includes the extracted_data dict and job_requirements dict as formatted text
+
+Strip markdown, parse the JSON object, and return it
+
+Wrap in try/except and raise a clear error if parsing fails
+
+Print "Scoring complete. Verdict: [verdict]" on success
+
+Do not call this function yet. Just define it cleanly.
+
+In src/agents/coordinator.py write a function called draft_action(scored_candidate: dict, extracted_data: dict) -> dict.
+
+scored_candidate is from score_candidate(), extracted_data is from extract_candidate_info().
+
+The function should:
+
+Initialize the OpenAI client using the key from .env
+
+Send a chat completion request to gpt-4o-mini with:
+
+A system prompt that says: You are a recruiting execution agent.
+Based on the candidate's score and verdict, determine the next step and draft an email response.
+Return ONLY a raw JSON object with no markdown and no explanation with these exact keys:
+
+action_type: one of "Schedule Interview", "Send Rejection", "Request More Info"
+
+email_draft: a fully written, professional email to the candidate reflecting the action_type.
+
+internal_notes: a 1-sentence note for the recruiting team on what to do next.
+
+A user message containing the candidate's name, intent, and the full scored_candidate dict.
+
+Strip markdown, parse and return the JSON dict
+
+Wrap in try/except and raise a clear error if parsing fails
+
+Print "Action drafted: [action_type]" on success
+
+Do not call this function yet. Just define it cleanly.
+
+In src/agents/summarizer.py write a function called generate_manager_brief(extracted_data: dict, scored_candidate: dict) -> dict.
+
+extracted_data is from extract_candidate_info(), scored_candidate is from score_candidate().
+
+The function should:
+
+Initialize the OpenAI client using the key from .env
+
+Send a chat completion request to gpt-4o-mini with:
+
+A system prompt that says: You are an executive assistant to the hiring manager.
+Review the candidate's profile and assessment, and create a brief for the hiring manager.
+Return ONLY a raw JSON object with no markdown and no explanation with these exact keys:
+
+tl_dr: 1-2 sentence summary of who the candidate is and if they are worth interviewing
+
+interview_questions: a list of exactly 3 specific, highly technical questions to ask them based on their profile
+
+red_flags: a list of any concerns, missing skills, or gaps (can be empty)
+
+A user message containing the extracted data and scored assessment
+
+Strip markdown, parse and return the JSON dict
+
+Wrap in try/except and raise a clear error if parsing fails
+
+Print "Manager brief generated." on success
+
+Do not call this function yet. Just define it cleanly.
+
+In src/main.py wire all four agents together into a single pipeline.
+
+The file should:
+
+Load OPENAI_API_KEY from .env using python-dotenv
+
+Raise a clear EnvironmentError if the key is missing
+
+Import extract_candidate_info, score_candidate, draft_action, generate_manager_brief
+
+Define a hardcoded test email string:
+"Hi, I'm Alice. I saw your job post for a Senior React Dev. I have 5 years of experience building scalable web apps using React, TypeScript, and Node.js. I've also worked a bit with AWS. I'd love to chat about the role. Attached is my resume."
+
+Define a hardcoded job_requirements dict:
+
+target_role: "Senior React Developer"
+
+required_skills: "React, TypeScript, GraphQL, CI/CD"
+
+Run the full pipeline in order:
+
+Call extract_candidate_info with the test email
+
+Print the extracted name and skills
+
+Call score_candidate with the extracted data and job requirements
+
+Print the score and verdict
+
+Call draft_action with the assessment and extracted data
+
+Print the action_type
+
+Call generate_manager_brief with the extracted data and assessment
+
+Print the tl_dr
+
+Wrap the entire pipeline in try/except and print a clear error if anything fails
+
+Print "Pipeline complete." at the end if everything succeeds
+
+Run python src/main.py and confirm all four agents fire in sequence
+and all outputs print correctly before moving to the next part.
+
+In src/app.py build the Streamlit UI. Do not change any agent files.
+
+The UI should have:
+
+Page config: title "AI Recruiting Inbox", layout "wide"
+
+A title and caption: "Automate your hiring pipeline with AI agents."
+
+A two-column layout for inputs:
+
+Left Column (Job Config):
+
+Text input: "Target Role" (e.g., Frontend Developer)
+
+Text input: "Required Skills" (e.g., React, TypeScript)
+
+Right Column (Inbox):
+
+Text area: "Paste Raw Candidate Email" (height: 200px)
+
+A full-width primary button "Process Candidate"
+
+When the button is clicked:
+
+Validate that all text fields are filled, show st.error and stop if any are empty
+
+Run all four agents in sequence, each inside its own st.spinner with a message:
+
+"Extracting candidate profile..."
+
+"Scoring against job requirements..."
+
+"Drafting execution steps..."
+
+"Generating hiring manager brief..."
+
+Store all four result dicts in st.session_state
+
+Display results using a clear dashboard layout:
+
+A top row with three metric cards (use st.columns):
+
+Score (use color coding: green for >80, orange for >50, red for below 50)
+
+Verdict
+
+Action Needed
+
+A subheader "Candidate Profile"
+
+Two columns:
+
+Left: Show Extracted Name, Current Role, Experience Years, and matched/missing skills as bullet points.
+
+Right: Show the Hiring Manager Brief (TL;DR, Red flags in an st.warning, and the 3 Interview Questions).
+
+A subheader "Automated Execution"
+
+Show the internal notes in an st.info box.
+
+Show the drafted email inside a text area so the user can edit it before "sending".
+
+A "Process Another Email" button that clears session state and reruns
+
+Wrap all agent calls in try/except and show st.error if anything fails
+
+Run with: streamlit run src/app.py
+Verify all four agents fire, the dashboard renders correctly, and the draft email is editable.
